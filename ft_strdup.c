@@ -19,7 +19,7 @@ char	*ft_strdup(const char *s1)
 
 	len = ft_strlen(s1) + 1;
 	if (len == 0 || s1 == 0)
-		return (0);
+		return (NULL);
 	cpy = (char *)ft_calloc(len, sizeof(char));
 	if (cpy == 0)
 		return (0);

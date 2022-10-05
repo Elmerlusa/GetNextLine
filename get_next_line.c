@@ -34,6 +34,8 @@ char	*get_next_line(int fd)
 		{
 			buff[index] = '\0';
 			line = ft_strjoin(line, buff);
+			if (line == NULL)
+				return (NULL);
 			index = 0;
 		}
 	}
@@ -42,6 +44,8 @@ char	*get_next_line(int fd)
 	else
 		buff[index] = '\0';
 	line = ft_strjoin(line, buff);
+	if (line == NULL)
+		return (NULL);
 	if (ft_strlen(line) == 0)
 		return (NULL);
 	return (line);
@@ -50,7 +54,7 @@ char	*get_next_line(int fd)
 int	main(void)
 {
 	char *filename = "file.txt";
-	// char *filename = "emptyfile.txt";
+	// filename = "emptyfile.txt";
 	int fd = open(filename, O_RDONLY);
 	if (fd < 0)
 		return (0);

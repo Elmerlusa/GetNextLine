@@ -58,9 +58,14 @@ int	main(void)
 	while (line != NULL)
 	{
 		line = get_next_line(fd);
+		if (line == NULL)
+			break ;
 		printf("%s", line);
 		free(line);
 	}
-	printf("%s", get_next_line(1));
+	printf("---------------\n");
+	line = get_next_line(1);
+	printf("%s", line);
+	free(line);
 	return (0);
 }

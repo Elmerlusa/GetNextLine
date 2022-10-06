@@ -27,6 +27,7 @@ char	*get_next_line(int fd)
 	line = ft_strdup("");
 	if (line == NULL)
 		return (NULL);
+	printf("LINE > %p\n", line);
 	index = 0;
 	while (read(fd, &buff[index], 1) > 0)
 	{
@@ -35,6 +36,8 @@ char	*get_next_line(int fd)
 		if (index == BUFFER_SIZE - 2)
 		{
 			line = join_line(line, buff, index + 1);
+			if (line == NULL)
+				return (NULL);
 			index = -1;
 		}
 		index++;
@@ -52,7 +55,10 @@ static char	*join_line(char *line, char *buff, int index)
 	new_line = ft_strjoin(line, buff);
 	free(line);
 	if (new_line == NULL || ft_strlen(new_line) == 0)
+	{
+		free(new_line);
 		return (NULL);
+	}
 	return (new_line);
 }
 
@@ -132,6 +138,7 @@ int	main(void)
 	line = get_next_line(1);
 	printf("%s", line);
 	free(line);
-	system("leaks -q a.out");
+	free(NULL);
+	// system("leaks -q a.out");
 	return (0);
 }

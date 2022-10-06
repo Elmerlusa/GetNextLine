@@ -14,11 +14,13 @@
 #include <stdio.h>
 #include <fcntl.h>
 
+static char	*join_line(char *line, char *buff, int index);
+
 char	*get_next_line(int fd)
 {
 	char	buff[BUFFER_SIZE];
 	char	*line;
-	size_t	index;
+	int		index;
 
 	if (fd <= 0 || BUFFER_SIZE <= 0)
 		return (NULL);
@@ -30,25 +32,84 @@ char	*get_next_line(int fd)
 	{
 		if (buff[index] == '\n')
 			break ;
-		if (index++ == BUFFER_SIZE - 2)
+		if (index == BUFFER_SIZE - 2)
 		{
-			buff[index] = '\0';
-			line = ft_strjoin(line, buff);
-			if (line == NULL)
-				return (NULL);
-			index = 0;
+			line = join_line(line, buff, index + 1);
+			index = -1;
 		}
+		index++;
 	}
+	return (join_line(line, buff, index));
+}
+
+static char	*join_line(char *line, char *buff, int index)
+{
+	char	*new_line;
+
 	if (buff[index] == '\n')
-		buff[++index] = '\0';
-	else
-		buff[index] = '\0';
-	line = ft_strjoin(line, buff);
-	if (line == NULL)
+		index++;
+	buff[index] = '\0';
+	new_line = ft_strjoin(line, buff);
+	free(line);
+	if (new_line == NULL || ft_strlen(new_line) == 0)
 		return (NULL);
-	if (ft_strlen(line) == 0)
+	return (new_line);
+}
+
+size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
+{
+	size_t	index;
+	size_t	len;
+
+	len = ft_strlen(src);
+	if (dstsize <= 0 || dst == 0)
+		return (len);
+	index = 0;
+	while (index < dstsize - 1 && src[index])
+	{
+		dst[index] = src[index];
+		index++;
+	}
+	dst[index] = '\0';
+	return (len);
+}
+
+size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
+{
+	size_t	index;
+	size_t	src_len;
+	size_t	dst_len;
+
+	if (dst == 0 && dstsize == 0)
+		return (0);
+	src_len = ft_strlen(src);
+	dst_len = ft_strlen(dst);
+	if (dstsize <= dst_len)
+		return (src_len + dstsize);
+	index = 0;
+	while (dst_len + index < dstsize - 1 && src[index])
+	{
+		dst[dst_len + index] = src[index];
+		index++;
+	}
+	dst[dst_len + index] = '\0';
+	return (src_len + dst_len);
+}
+
+char	*ft_strjoin(const char *s1, const char *s2)
+{
+	char			*s3;
+	unsigned int	len;
+
+	if (s1 == 0 || s2 == 0)
+		return (0);
+	len = ft_strlen(s1) + ft_strlen(s2) + 1;
+	s3 = (char *)ft_calloc(len, sizeof(char));
+	if (s3 == NULL)
 		return (NULL);
-	return (line);
+	ft_strlcpy(s3, s1, ft_strlen(s1) + 1);
+	ft_strlcat(s3, s2, ft_strlen(s3) + ft_strlen(s2) + 1);
+	return (s3);
 }
 
 int	main(void)
@@ -71,5 +132,6 @@ int	main(void)
 	line = get_next_line(1);
 	printf("%s", line);
 	free(line);
+	system("leaks -q a.out");
 	return (0);
 }

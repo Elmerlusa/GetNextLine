@@ -5,142 +5,131 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: javmarti <javmarti@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/03 18:44:46 by javmarti          #+#    #+#             */
-/*   Updated: 2022/10/03 18:44:46 by javmarti         ###   ########.fr       */
+/*   Created: 2022/10/13 14:37:22 by javmarti          #+#    #+#             */
+/*   Updated: 2022/10/13 14:37:22 by javmarti         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
-#include <fcntl.h>
 
-static char	*join_line(char *line, char *buff, int index);
-
-char	*get_next_line(int fd)
-{
-	char	buff[BUFFER_SIZE];
-	char	*line;
-	int		index;
-
-	if (fd <= 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE > 10000)
-		return (NULL);
-	line = ft_strdup("");
-	if (line == NULL)
-		return (NULL);
-	index = 0;
-	while (read(fd, &buff[index], 1) > 0)
-	{
-		if (buff[index] == '\n')
-		{
-			index++;
-			break ;
-		}
-		if (index == BUFFER_SIZE - 2)
-		{
-			line = join_line(line, buff, index + 1);
-			if (line == NULL)
-				return (NULL);
-			index = -1;
-		}
-		index++;
-	}
-	return (join_line(line, buff, index));
-}
-
-static char	*join_line(char *line, char *buff, int index)
+static char	*join_line(char *line, char *buffer)
 {
 	char	*new_line;
 
-	buff[index] = '\0';
-	new_line = ft_strjoin(line, buff);
-	free(line);
-	if (new_line == NULL || ft_strlen(new_line) == 0)
-	{
-		free(new_line);
+	if (line == NULL || buffer == NULL)
 		return (NULL);
-	}
+	new_line = ft_strjoin(line, buffer);
+	free(line);
 	return (new_line);
 }
 
-size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
+static char	*read_buffer(int fd, char *buffer, char *line)
 {
-	size_t	index;
-	size_t	len;
+	int		bytes_read;
+	char	*aux;
+	char	*new_line;
 
-	len = ft_strlen(src);
-	if (dstsize <= 0 || dst == 0)
-		return (len);
-	index = 0;
-	while (index < dstsize - 1 && src[index])
+	if (ft_strchr(line, '\n') != NULL)
+		return (line);
+	bytes_read = read(fd, buffer, BUFFER_SIZE);
+	buffer[bytes_read] = '\0';
+	aux = ft_strchr(buffer, '\n');
+	while (bytes_read > 0 && aux == NULL)
 	{
-		dst[index] = src[index];
-		index++;
-	}
-	dst[index] = '\0';
-	return (len);
-}
-
-size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
-{
-	size_t	index;
-	size_t	src_len;
-	size_t	dst_len;
-
-	if (dst == 0 && dstsize == 0)
-		return (0);
-	src_len = ft_strlen(src);
-	dst_len = ft_strlen(dst);
-	if (dstsize <= dst_len)
-		return (src_len + dstsize);
-	index = 0;
-	while (dst_len + index < dstsize - 1 && src[index])
-	{
-		dst[dst_len + index] = src[index];
-		index++;
-	}
-	dst[dst_len + index] = '\0';
-	return (src_len + dst_len);
-}
-
-char	*ft_strjoin(const char *s1, const char *s2)
-{
-	char			*s3;
-	unsigned int	len;
-
-	if (s1 == 0 || s2 == 0)
-		return (0);
-	len = ft_strlen(s1) + ft_strlen(s2) + 1;
-	s3 = (char *)ft_calloc(len, sizeof(char));
-	if (s3 == NULL)
-		return (NULL);
-	ft_strlcpy(s3, s1, ft_strlen(s1) + 1);
-	ft_strlcat(s3, s2, ft_strlen(s3) + ft_strlen(s2) + 1);
-	return (s3);
-}
-
-int	main(void)
-{
-	char *filename = "file.txt";
-	// filename = "emptyfile.txt";
-	int fd = open(filename, O_RDONLY);
-	if (fd < 0)
-		return (0);
-	char *line = " ";
-	while (line != NULL)
-	{
-		line = get_next_line(fd);
+		line = join_line(line, buffer);
 		if (line == NULL)
-			break ;
-		printf("%s", line);
-		free(line);
+			return (NULL);
+		bytes_read = read(fd, buffer, BUFFER_SIZE);
+		buffer[bytes_read] = '\0';
+		aux = ft_strchr(buffer, '\n');
 	}
-	printf("---------------\n");
-	line = get_next_line(0);
-	printf("%s", line);
-	free(line);
-	// system("leaks -q a.out");
-	// char buff[BUFFER_SIZE];
-	// read(0, buff, BUFFER_SIZE);
-	// printf("%s\n", buff);
-	return (0);
+	if (aux != NULL)
+	{
+		new_line = ft_substr(buffer, 0, aux + 1 - buffer);
+		line = join_line(line, new_line);
+		free(new_line);
+	}
+	return (line);
 }
+
+static void	update_buffer(char *buffer)
+{
+	char	*aux;
+
+	aux = ft_strchr(buffer, '\n');
+	if (aux == NULL)
+		ft_bzero(buffer, BUFFER_SIZE+ 1);
+	else
+		ft_strlcpy(buffer, aux + 1, BUFFER_SIZE + 1);
+}
+
+static char	*create_line(char *buffer)
+{
+	char	*line;
+	char	*aux;
+	char	*new_line;
+
+	line = (char *)ft_calloc(1, sizeof(char));
+	if (line == NULL)
+	{
+		free(buffer);
+		return (NULL);
+	}
+	aux = ft_strchr(buffer, '\n');
+	if (aux == NULL)
+		line = join_line(line, buffer);
+	else
+	{
+		new_line = ft_substr(buffer, 0, aux + 1 - buffer);
+		line = join_line(line, new_line);
+		free(new_line);
+	}
+	if (line == NULL)
+		free(buffer);
+	return (line);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*buffer;
+	char		*line;
+
+	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0))
+		return (NULL);
+	if (buffer == NULL)
+		buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	if (buffer == NULL)
+		return (NULL);
+	printf("BUFFER -> %p\n", buffer);
+	line = create_line(buffer);
+	if (line == NULL)
+		return (NULL);
+	line = read_buffer(fd, buffer, line);
+	if (line[0] == 0 || line == NULL)
+	{
+		if (line != NULL)
+			free(line);
+		free(buffer);
+		return (NULL);
+	}
+	update_buffer(buffer);
+	return (line);
+}
+// #include <fcntl.h>
+// int main(void)
+// {
+// 	char *filename = "./emptyfile.txt";
+// 	int fd = open(filename, O_RDONLY);
+// 	char *line;
+// 	while ((line = get_next_line(fd)))
+// 	{
+// 		printf("LINEOUT -> %s", line);
+// 		free(line);
+// 	}
+// 	if (line != NULL)
+// 		free(line);
+// 	printf("\n");
+// 	// line = get_next_line(1);
+// 	// free(line);
+// 	return (0);
+// }

@@ -46,6 +46,7 @@ void	*ft_calloc(size_t count, size_t size)
 {
 	void	*mem;
 	size_t	len;
+	size_t	index;
 
 	len = count * size;
 	if (len && len / count != size && count != 0)
@@ -53,26 +54,10 @@ void	*ft_calloc(size_t count, size_t size)
 	mem = malloc(len);
 	if (mem == NULL)
 		return (NULL);
-	ft_bzero(mem, len);
-	return (mem);
-}
-
-void	*ft_memset(void *b, int c, size_t len)
-{
-	size_t	index;
-
-	if (len == 0)
-		return (b);
 	index = 0;
 	while (index < len)
-		((unsigned char *)b)[index++] = (unsigned char)c;
-	return (b);
-}
-
-void	ft_bzero(void *s, size_t n)
-{
-	ft_memset(s, 0, n);
-	return ;
+		((unsigned char *)mem)[index++] = '\0';
+	return (mem);
 }
 
 size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)

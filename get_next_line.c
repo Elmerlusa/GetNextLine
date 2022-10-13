@@ -58,7 +58,7 @@ static void	update_buffer(char *buffer)
 
 	aux = ft_strchr(buffer, '\n');
 	if (aux == NULL)
-		ft_bzero(buffer, BUFFER_SIZE+ 1);
+		buffer[0] = '\0';
 	else
 		ft_strlcpy(buffer, aux + 1, BUFFER_SIZE + 1);
 }
@@ -70,11 +70,6 @@ static char	*create_line(char *buffer)
 	char	*new_line;
 
 	line = (char *)ft_calloc(1, sizeof(char));
-	if (line == NULL)
-	{
-		free(buffer);
-		return (NULL);
-	}
 	aux = ft_strchr(buffer, '\n');
 	if (aux == NULL)
 		line = join_line(line, buffer);
@@ -85,7 +80,10 @@ static char	*create_line(char *buffer)
 		free(new_line);
 	}
 	if (line == NULL)
+	{
 		free(buffer);
+		buffer = NULL;
+	}
 	return (line);
 }
 
@@ -94,42 +92,24 @@ char	*get_next_line(int fd)
 	static char	*buffer;
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0))
+	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
 		return (NULL);
 	if (buffer == NULL)
 		buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
 	if (buffer == NULL)
 		return (NULL);
-	printf("BUFFER -> %p\n", buffer);
 	line = create_line(buffer);
 	if (line == NULL)
 		return (NULL);
 	line = read_buffer(fd, buffer, line);
-	if (line[0] == 0 || line == NULL)
+	if (line[0] == '\0' || line == NULL)
 	{
 		if (line != NULL)
 			free(line);
 		free(buffer);
+		buffer = NULL;
 		return (NULL);
 	}
 	update_buffer(buffer);
 	return (line);
 }
-// #include <fcntl.h>
-// int main(void)
-// {
-// 	char *filename = "./emptyfile.txt";
-// 	int fd = open(filename, O_RDONLY);
-// 	char *line;
-// 	while ((line = get_next_line(fd)))
-// 	{
-// 		printf("LINEOUT -> %s", line);
-// 		free(line);
-// 	}
-// 	if (line != NULL)
-// 		free(line);
-// 	printf("\n");
-// 	// line = get_next_line(1);
-// 	// free(line);
-// 	return (0);
-// }

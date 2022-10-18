@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: javmarti <javmarti@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/13 14:37:22 by javmarti          #+#    #+#             */
-/*   Updated: 2022/10/13 14:37:22 by javmarti         ###   ########.fr       */
+/*   Created: 2022/10/18 19:25:21 by javmarti          #+#    #+#             */
+/*   Updated: 2022/10/18 19:25:21 by javmarti         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 static char	*join_line(char *line, char *buffer)
 {
@@ -95,27 +95,27 @@ static char	*create_line(char *buffer)
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
+	static char	*buffer[1024];
 	char		*line;
 
 	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
 		return (NULL);
-	if (buffer == NULL)
-		buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	if (buffer == NULL)
+	if (buffer[fd] == NULL)
+		buffer[fd] = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	if (buffer[fd] == NULL)
 		return (NULL);
-	line = create_line(buffer);
+	line = create_line(buffer[fd]);
 	if (line == NULL)
 		return (NULL);
-	line = read_buffer(fd, buffer, line);
+	line = read_buffer(fd, buffer[fd], line);
 	if (line[0] == '\0' || line == NULL)
 	{
 		if (line != NULL)
 			free(line);
-		free(buffer);
-		buffer = NULL;
+		free(buffer[fd]);
+		buffer[fd] = NULL;
 		return (NULL);
 	}
-	update_buffer(buffer);
+	update_buffer(buffer[fd]);
 	return (line);
 }

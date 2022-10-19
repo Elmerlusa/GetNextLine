@@ -100,26 +100,3 @@ static void	update_buffer(char *buffer)
 		buffer[index] = '\0';
 	}
 }
-
-char	*get_next_line(int fd)
-{
-	static char	*buffer[1024];
-	char		*line;
-
-	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
-		return (NULL);
-	if (buffer[fd] == NULL)
-		buffer[fd] = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	line = (char *)ft_calloc(1, sizeof(char));
-	line = join_line(line, buffer[fd]);
-	line = read_buffer(fd, buffer[fd], line);
-	if (line[0] == '\0' || line == NULL)
-	{
-		free(line);
-		free(buffer[fd]);
-		buffer[fd] = NULL;
-		return (NULL);
-	}
-	update_buffer(buffer[fd]);
-	return (line);
-}

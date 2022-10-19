@@ -12,9 +12,9 @@
 
 #include "get_next_line.h"
 
-static char	*join_line(char *line, char *buffer);
-static char	*read_buffer(int fd, char *buffer, char *line);
-static void	update_buffer(char *buffer);
+char	*join_line(char *line, char *buffer);
+char	*read_buffer(int fd, char *buffer, char *line);
+void	update_buffer(char *buffer);
 
 char	*get_next_line(int fd)
 {
@@ -39,7 +39,7 @@ char	*get_next_line(int fd)
 	return (line);
 }
 
-static char	*join_line(char *line, char *buffer)
+char	*join_line(char *line, char *buffer)
 {
 	char	*new_line;
 	char	*aux;
@@ -63,7 +63,7 @@ static char	*join_line(char *line, char *buffer)
 	return (new_line);
 }
 
-static char	*read_buffer(int fd, char *buffer, char *line)
+char	*read_buffer(int fd, char *buffer, char *line)
 {
 	int		bytes_read;
 
@@ -83,7 +83,7 @@ static char	*read_buffer(int fd, char *buffer, char *line)
 	return (line);
 }
 
-static void	update_buffer(char *buffer)
+void	update_buffer(char *buffer)
 {
 	char	*aux;
 	size_t	index;

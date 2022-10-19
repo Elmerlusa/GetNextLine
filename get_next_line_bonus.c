@@ -10,40 +10,45 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line_bonus.h"
+#include "get_next_line.h"
 
 static char	*join_line(char *line, char *buffer)
 {
 	char	*new_line;
+	char	*aux;
+	char	*aux_line;
 
 	if (line == NULL || buffer == NULL)
 		return (NULL);
-	new_line = ft_strjoin(line, buffer);
-	free(line);
+	aux = ft_strchr(buffer, '\n');
+	if (aux == NULL)
+	{
+		new_line = ft_strjoin(line, buffer);
+		free(line);
+	}
+	else
+	{
+		aux_line = ft_substr(buffer, 0, aux + 1 - buffer);
+		new_line = ft_strjoin(line, aux_line);
+		free(line);
+		free(aux_line);
+	}
 	return (new_line);
 }
 
 static char	*read_buffer(int fd, char *buffer, char *line)
 {
 	int		bytes_read;
-	char	*aux;
-	char	*new_line;
 
+	if (line == NULL || buffer == NULL)
+		return (NULL);
 	if (ft_strchr(line, '\n') != NULL)
 		return (line);
 	bytes_read = 1;
-	while (bytes_read > 0)
+	while (bytes_read > 0 && ft_strchr(buffer, '\n') == NULL)
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
 		buffer[bytes_read] = '\0';
-		aux = ft_strchr(buffer, '\n');
-		if (aux != NULL)
-		{
-			new_line = ft_substr(buffer, 0, aux + 1 - buffer);
-			line = join_line(line, new_line);
-			free(new_line);
-			break ;
-		}
 		line = join_line(line, buffer);
 		if (line == NULL)
 			return (NULL);
@@ -69,30 +74,6 @@ static void	update_buffer(char *buffer)
 	}
 }
 
-static char	*create_line(char *buffer)
-{
-	char	*line;
-	char	*aux;
-	char	*new_line;
-
-	line = (char *)ft_calloc(1, sizeof(char));
-	aux = ft_strchr(buffer, '\n');
-	if (aux == NULL)
-		line = join_line(line, buffer);
-	else
-	{
-		new_line = ft_substr(buffer, 0, aux + 1 - buffer);
-		line = join_line(line, new_line);
-		free(new_line);
-	}
-	if (line == NULL)
-	{
-		free(buffer);
-		buffer = NULL;
-	}
-	return (line);
-}
-
 char	*get_next_line(int fd)
 {
 	static char	*buffer[1024];
@@ -102,16 +83,12 @@ char	*get_next_line(int fd)
 		return (NULL);
 	if (buffer[fd] == NULL)
 		buffer[fd] = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	if (buffer[fd] == NULL)
-		return (NULL);
-	line = create_line(buffer[fd]);
-	if (line == NULL)
-		return (NULL);
+	line = (char *)ft_calloc(1, sizeof(char));
+	line = join_line(line, buffer[fd]);
 	line = read_buffer(fd, buffer[fd], line);
 	if (line[0] == '\0' || line == NULL)
 	{
-		if (line != NULL)
-			free(line);
+		free(line);
 		free(buffer[fd]);
 		buffer[fd] = NULL;
 		return (NULL);

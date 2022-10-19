@@ -12,6 +12,33 @@
 
 #include "get_next_line.h"
 
+static char	*join_line(char *line, char *buffer);
+static char	*read_buffer(int fd, char *buffer, char *line);
+static void	update_buffer(char *buffer);
+
+char	*get_next_line(int fd)
+{
+	static char	*buffer;
+	char		*line;
+
+	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
+		return (NULL);
+	if (buffer == NULL)
+		buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
+	line = (char *)ft_calloc(1, sizeof(char));
+	line = join_line(line, buffer);
+	line = read_buffer(fd, buffer, line);
+	if (line[0] == '\0' || line == NULL)
+	{
+		free(line);
+		free(buffer);
+		buffer = NULL;
+		return (NULL);
+	}
+	update_buffer(buffer);
+	return (line);
+}
+
 static char	*join_line(char *line, char *buffer)
 {
 	char	*new_line;
@@ -72,27 +99,4 @@ static void	update_buffer(char *buffer)
 			buffer[index] = aux[index];
 		buffer[index] = '\0';
 	}
-}
-
-char	*get_next_line(int fd)
-{
-	static char	*buffer;
-	char		*line;
-
-	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
-		return (NULL);
-	if (buffer == NULL)
-		buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
-	line = (char *)ft_calloc(1, sizeof(char));
-	line = join_line(line, buffer);
-	line = read_buffer(fd, buffer, line);
-	if (line[0] == '\0' || line == NULL)
-	{
-		free(line);
-		free(buffer);
-		buffer = NULL;
-		return (NULL);
-	}
-	update_buffer(buffer);
-	return (line);
 }

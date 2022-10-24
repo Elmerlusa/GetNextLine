@@ -18,21 +18,17 @@ void	update_buffer(char *buffer);
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
+	static char	buffer[BUFFER_SIZE + 1];
 	char		*line;
 
 	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
 		return (NULL);
-	if (buffer == NULL)
-		buffer = (char *)ft_calloc(BUFFER_SIZE + 1, sizeof(char));
 	line = (char *)ft_calloc(1, sizeof(char));
 	line = join_line(line, buffer);
 	line = read_buffer(fd, buffer, line);
 	if (line[0] == '\0' || line == NULL)
 	{
 		free(line);
-		free(buffer);
-		buffer = NULL;
 		return (NULL);
 	}
 	update_buffer(buffer);

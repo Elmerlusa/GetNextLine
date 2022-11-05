@@ -21,14 +21,15 @@ char	*get_next_line(int fd)
 	static char	buffer[BUFFER_SIZE + 1];
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE < 1)
 		return (NULL);
 	line = (char *)ft_calloc(1, sizeof(char));
 	line = join_line(line, buffer);
 	line = read_buffer(fd, buffer, line);
-	if (line[0] == '\0' || line == NULL)
+	if (line[0] == '\0' || line == NULL || read(fd, NULL, 0) < 0)
 	{
 		free(line);
+		buffer[0] = '\0';
 		return (NULL);
 	}
 	update_buffer(buffer);
@@ -45,17 +46,14 @@ char	*join_line(char *line, char *buffer)
 		return (NULL);
 	aux = ft_strchr(buffer, '\n');
 	if (aux == NULL)
-	{
 		new_line = ft_strjoin(line, buffer);
-		free(line);
-	}
 	else
 	{
 		aux_line = ft_substr(buffer, 0, aux + 1 - buffer);
 		new_line = ft_strjoin(line, aux_line);
-		free(line);
 		free(aux_line);
 	}
+	free(line);
 	return (new_line);
 }
 
@@ -74,7 +72,7 @@ char	*read_buffer(int fd, char *buffer, char *line)
 		buffer[bytes_read] = '\0';
 		line = join_line(line, buffer);
 		if (line == NULL)
-			return (NULL);
+			break ;
 	}
 	return (line);
 }
@@ -95,4 +93,5 @@ void	update_buffer(char *buffer)
 			buffer[index] = aux[index];
 		buffer[index] = '\0';
 	}
+	return ;
 }
